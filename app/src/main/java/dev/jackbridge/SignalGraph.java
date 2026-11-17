@@ -34,7 +34,9 @@ public class SignalGraph extends View {
         float step = (float) w / n;
         for (int i = 0; i < n; i++) {
             int v = hist[(end - n + i) & (n - 1)];
-            float half = v / 32767f * mid;
+            // dB scale: -60 dB at the center line, 0 dB (full scale) at the edges
+            float db = v > 0 ? (float) (20 * Math.log10(v / 32767.0)) : -60f;
+            float half = Math.max(0f, (db + 60f) / 60f) * mid;
             float x = i * step;
             canvas.drawRect(x, mid - half, x + Math.max(step, 1f), mid + half, v >= CLIP ? clip : bar);
         }

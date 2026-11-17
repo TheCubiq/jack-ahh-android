@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
         root.addView(gain);
 
         TextView meterLabel = new TextView(this);
-        meterLabel.setText("Input signal (last ~5 s, red = clipping)");
+        meterLabel.setText("Input signal, dB (last ~5 s, red = clipping)");
         meterLabel.setPadding(0, pad, 0, 0);
         root.addView(meterLabel);
         graph = new SignalGraph(this);
