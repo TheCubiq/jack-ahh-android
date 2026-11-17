@@ -27,6 +27,9 @@ public class BridgeService extends Service {
     static volatile boolean running;
     static volatile float gain = 1f;
     static volatile int peak;          // last input peak, 0..32767
+    /** Ring buffer of per-block input peaks (~5 ms each, ~5.5 s total) for the graph. */
+    static final short[] history = new short[1024];
+    static volatile int historyPos;
     static volatile String status = "Stopped";
     static volatile boolean registerOutputToo;
 
@@ -163,6 +166,9 @@ public class BridgeService extends Service {
                 buf[i] = (short) Math.max(-32768, Math.min(32767, s));
             }
             peak = pk;
+            int hp = historyPos;
+            history[hp & (history.length - 1)] = (short) Math.min(pk, 32767);
+            historyPos = hp + 1;
             track.write(buf, 0, n);
         }
         rec.stop(); rec.release();

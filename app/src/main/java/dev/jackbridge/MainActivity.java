@@ -10,14 +10,13 @@ import android.view.Gravity;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
     private final Handler ui = new Handler(Looper.getMainLooper());
     private TextView statusView, gainLabel;
-    private ProgressBar meter;
+    private SignalGraph graph;
     private Button toggle;
 
     @Override
@@ -59,12 +58,11 @@ public class MainActivity extends Activity {
         root.addView(gain);
 
         TextView meterLabel = new TextView(this);
-        meterLabel.setText("Input level");
+        meterLabel.setText("Input signal (last ~5 s, red = clipping)");
         meterLabel.setPadding(0, pad, 0, 0);
         root.addView(meterLabel);
-        meter = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        meter.setMax(32767);
-        root.addView(meter, new LinearLayout.LayoutParams(-1, -2));
+        graph = new SignalGraph(this);
+        root.addView(graph, new LinearLayout.LayoutParams(-1, pad * 6));
 
         CheckBox outToo = new CheckBox(this);
         outToo.setText("Also register jack as an output (try if the input stays silent)");
@@ -85,7 +83,7 @@ public class MainActivity extends Activity {
         public void run() {
             toggle.setText(BridgeService.running ? "Stop" : "Start");
             gainLabel.setText("Gain: " + Math.round(BridgeService.gain * 100) + "%");
-            meter.setProgress(BridgeService.peak);
+            graph.invalidate();
             statusView.setText(BridgeService.status);
             ui.postDelayed(this, 100);
         }
