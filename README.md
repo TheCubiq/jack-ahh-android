@@ -1,68 +1,94 @@
-# Jack Bridge
+# jack-ahh-android
 
-An Android app that turns a rooted phone into a Bluetooth audio receiver for a wired source. Audio comes into the phone's 3.5 mm headphone jack from a PC, for example, and the app plays it live to the phone's connected Bluetooth headphones.
+Turn a rooted Android phone into a Bluetooth receiver for anything with a headphone output. Plug a PC into the phone's 3.5 mm
+jack, and the app plays it live to your Bluetooth headphones.
+
+Unofficial, rooted phones only. Android 10 or later.
 
 ```
-PC audio out ──cable──▶ phone headset jack (mic input) ──app──▶ Bluetooth A2DP headphones
+PC audio out ──cable──▶ phone's headset jack ──app──▶ Bluetooth headphones
 ```
 
 ## Features
 
-- Plays to the headphones over A2DP, Bluetooth's high-quality media profile, not the low-quality call profile (SCO).
-- Gain slider from 0 to 400%.
-- Scrolling 5-second signal graph on a dB scale. It turns red when the input clips.
-- Runs as a foreground service, so it keeps working with the screen off. The notification has a Stop button.
+| Feature | What it does |
+|---|---|
+| Bluetooth playback | Plays over A2DP, Bluetooth's media profile, not the low-quality call one |
+| Gain | A slider from 0 to 400% |
+| Signal graph | The last 5 seconds on a dB scale, so quiet input still shows. It turns red when the input clips |
+| Screen off | Runs as a foreground service. The notification has a **Stop** button |
 
-## Requirements
+## What you need
 
-- **Root** (Magisk or similar). See [How it works](#how-it-works).
-- Android 10 or later (minSdk 29). Developed on an Exynos Galaxy S8 running an Android 15 ROM.
-- **A cable that puts the audio on the jack's mic contact.** A phone headset jack has four contacts: left out, right out, ground and **mic in**. The mic contact is the only input. A plain 3-ring aux cable fully inserted shorts the mic contact to ground, and you get near-silence. Use one of these:
-  - a TRRS headset splitter, with the PC plugged into the pink **mic** socket
+- **Root**, with Magisk or similar. [Why →](#why-does-it-need-root)
+- **A cable that puts the audio on the jack's mic contact.** The headset jack's only input is its mic contact, and a plain
+  3-ring aux cable shorts that to ground, so you hear near-silence. Use one of these:
+  - a TRRS headset splitter, with the PC in the pink **mic** socket
   - a TRS-to-TRRS "microphone" cable
-  - an RCA adapter combination that routes one channel onto the mic contact
+  - an RCA adapter combination that puts one channel on the mic contact
 
-## Limitations
+## Install
 
-- **Mono only.** The headset jack has a single input channel. When the app requests stereo capture, it gets two identical copies of that channel. To get the whole mix into one channel, turn on Windows **Settings → Accessibility → Audio → Mono audio**.
-- **Mic-level input.** A PC speaker or line output is much louder than the jack's mic input expects. Start with the PC volume around 10–20% and raise it until the graph is tall but not red. Fix clipping on the PC side; the app's gain slider is applied after the clipping happens.
-- **Latency.** Bluetooth A2DP adds about 200 ms. That's fine for music and noticeable for video.
+1. Build the app and install it. See [Building](docs/how-it-works.md#building).
+2. Open it, and grant root access when Magisk asks.
 
-## How it works
+## Use
 
-On some ROMs the kernel detects a plugged-in headset (`/sys/class/switch/h2w/state` reads `1`), but `WiredAccessoryManager` never tells `AudioService`. The wired headset mic then never appears as an input device, and apps can't record from it.
+1. Connect your Bluetooth headphones to the phone.
+2. Plug the PC into the jack and start playing something.
+3. Press **Start**.
+4. Turn the PC's volume up from about 10–20% until the graph is tall but not red.
 
-When you press **Start**, the app uses `su` to run `RootJack` through `app_process`. `RootJack` calls `IAudioService.setWiredDeviceConnectionState()` to register `AUDIO_DEVICE_IN_WIRED_HEADSET`, the same call the framework would normally make. `BridgeService` then:
+Press **Stop** to end it. After unplugging and plugging the cable back in, press **Stop**, then **Start**.
 
-1. Records from the wired headset mic with an `AudioRecord` (source `UNPROCESSED`, falling back to `VOICE_RECOGNITION`) at 48 kHz mono, with `setPreferredDevice()` set to the jack.
-2. Applies the gain and writes the audio to an `AudioTrack` (`USAGE_MEDIA`, low-latency mode) with `setPreferredDevice()` set to the A2DP headphones.
+## FAQ
 
-Pressing **Stop** unregisters the device again. The ROM doesn't report plug or unplug events, so after re-plugging the cable press Stop, then Start.
+<details>
+<summary><strong>Why does it need root?</strong></summary>
 
-The **Also register jack as an output** checkbox also registers the headset output. Some audio hardware only powers the mic input (mic bias) when it thinks headphones are plugged in. It's off by default, because it can pull other apps' audio to the jack.
+On some ROMs Android sees the headset plugged in but never offers its mic to apps, so nothing can record from the jack. The app
+uses root to tell Android about it, the way Android would itself. [How it works →](docs/how-it-works.md)
 
-## Building
+</details>
 
-The build needs JDK 17+ and the Android SDK (platform 35). Point `local.properties` at the SDK:
+<details>
+<summary><strong>Why is it near silent?</strong></summary>
 
-```properties
-sdk.dir=D:/Android/sdk
-```
+The cable isn't putting the audio on the mic contact. See [What you need](#what-you-need).
 
-Then:
+</details>
 
-```sh
-./gradlew assembleDebug
-adb install -r -g app/build/outputs/apk/debug/app-debug.apk
-```
+<details>
+<summary><strong>Why is it mono?</strong></summary>
 
-`-g` grants the runtime permissions (microphone, notifications, Bluetooth). On first start, Magisk asks for root access; grant it.
+The headset jack has one input channel. To get the whole mix into it, turn on **Settings → Accessibility → Audio → Mono audio**
+in Windows.
 
-## Project layout
+</details>
 
-| File | Purpose |
-| --- | --- |
-| `app/src/main/java/dev/jackbridge/MainActivity.java` | UI: start/stop, gain, signal graph, status |
-| `app/src/main/java/dev/jackbridge/BridgeService.java` | Foreground service that records from the jack and plays to Bluetooth |
-| `app/src/main/java/dev/jackbridge/RootJack.java` | Root helper run through `app_process`; registers the wired headset with `AudioService` |
-| `app/src/main/java/dev/jackbridge/SignalGraph.java` | Scrolling dB signal graph |
+<details>
+<summary><strong>Why is it distorted?</strong></summary>
+
+A PC's output is much louder than a mic input expects. Turn the PC's volume down until the graph stops turning red. The gain
+slider comes after the clipping, so it can't fix it.
+
+</details>
+
+<details>
+<summary><strong>Is there a delay?</strong></summary>
+
+Bluetooth adds about 200 ms. That's fine for music and noticeable for video.
+
+</details>
+
+<details>
+<summary><strong>What does "Also register jack as an output" do?</strong></summary>
+
+Some phones only power the mic input when they think headphones are plugged in. This also tells Android about the jack's
+output. It's off by default, because it can pull other apps' sound to the jack.
+
+</details>
+
+## Contributing
+
+[How it works](docs/how-it-works.md) covers what the app does under the hood, building it and the project layout.
