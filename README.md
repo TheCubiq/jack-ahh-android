@@ -10,7 +10,7 @@ PC ──cable──▶ phone's jack ──▶ Bluetooth headphones
 
 ## Features
 
-| | |
+| Feature | What it does |
 |---|---|
 | A2DP | Media-quality Bluetooth, not call quality |
 | Gain | 0–400% |
@@ -19,8 +19,7 @@ PC ──cable──▶ phone's jack ──▶ Bluetooth headphones
 
 ## Setup
 
-You need a cable that puts the audio on the jack's **mic** contact: a TRRS splitter (PC in the pink socket) or a TRS-to-TRRS mic
-cable. A plain aux cable gives near-silence.
+You need a cable that puts the audio on the jack's **mic** contact: a TRRS splitter (PC in the pink socket) or a TRS-to-TRRS mic cable. A plain aux cable gives near-silence.
 
 1. [Build](docs/how-it-works.md#building) and install the app. Grant root.
 2. Connect your headphones, plug in the PC, press **Start**.
