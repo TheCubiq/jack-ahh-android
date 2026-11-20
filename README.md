@@ -32,21 +32,21 @@ Replugged the cable? **Stop**, then **Start**.
 <details>
 <summary><strong>Why root?</strong></summary>
 
-Some ROMs never offer the headset mic to apps. Root tells Android it's there.
+Some ROMs never offer the headset mic to apps. Root tells Android it's there. Feel free to give it a PR without root, shizuku version maybe, this one was literally just my own edge-case purpose.
 
 </details>
 
 <details>
 <summary><strong>Why mono?</strong></summary>
 
-The jack has one input. Turn on Windows **Mono audio** to get the whole mix.
+The jack has one input. Don't forget to turn on **Mono audio** on your source device to get the whole mix.
 
 </details>
 
 <details>
 <summary><strong>Delay?</strong></summary>
 
-About 200 ms from Bluetooth.
+About 200 ms, from Bluetooth.
 
 </details>
 
